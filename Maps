@@ -1,0 +1,160 @@
+-- MAP COPY | Items: 737 | Mode: normal
+-- Skipped/Converted: Accessory x3, Animation x1, AnimationConstraint x15, BallSocketConstraint x14, BodyColors x1, FaceControls x1, Humanoid x1, NoCollisionConstraint x19, NumberValue x17, Pants x1, Shirt x1, StringValue x3, TouchTransmitter x53, UIStroke x65, UnionOperation(->Part) x5, Vector3Value x69, WrapTarget x15
+local Players = game:GetService("Players")
+local W = game:GetService("Workspace")
+local L = game:GetService("Lighting")
+local AssetService = game:GetService("AssetService")
+local player = Players.LocalPlayer
+local n, C, meshCache = {}, {}, {}
+local SetLighting = nil
+local LIGHT_CLASSES = {Sky=true,Atmosphere=true,BloomEffect=true,BlurEffect=true,ColorCorrectionEffect=true,SunRaysEffect=true,DepthOfFieldEffect=true}
+
+local SPAWNS = {}
+local CLEAR_LIGHTING = true
+-- Clear existing map objects
+local function ClearMap()
+	for _, v in ipairs(W:GetChildren()) do
+		if not v:IsA("Terrain") and not v:IsA("Camera") and not Players:GetPlayerFromCharacter(v) then
+			pcall(function() v:Destroy() end)
+		end
+	end
+	if CLEAR_LIGHTING then
+		for _, v in ipairs(L:GetChildren()) do
+			if LIGHT_CLASSES[v.ClassName] then pcall(function() v:Destroy() end) end
+		end
+	end
+end
+
+-- Build copied instances (Part, Mesh, Decal, Texture, Fire, Particle, Spawn, etc.)
+local function Make(class, props, parent, meshId)
+	local inst
+	if class == "MeshPart" then
+		if meshId and meshId ~= "" then
+			local cached = meshCache[meshId]
+			if cached then
+				inst = cached:Clone()
+			else
+				local ok, mp = pcall(function() return AssetService:CreateMeshPartAsync(meshId) end)
+				if not ok and Content and Content.fromUri then
+					ok, mp = pcall(function() return AssetService:CreateMeshPartAsync(Content.fromUri(meshId)) end)
+				end
+				if ok and mp then
+					meshCache[meshId] = mp
+					inst = mp:Clone()
+				end
+			end
+		end
+		if not inst then inst = Instance.new("Part") end
+	else
+		inst = Instance.new(class)
+	end
+	for k, v in pairs(props) do
+		pcall(function() inst[k] = v end)
+	end
+	inst.Parent = parent
+	return inst
+end
+
+-- Link object references (Weld / PrimaryPart)
+local function Ref(a, prop, b)
+	pcall(function() n[a][prop] = n[b] end)
+end
+
+-- Teleport player character to spawn location
+local function WarpToSpawn(char)
+	if #SPAWNS == 0 then return end
+	local hrp = char:WaitForChild("HumanoidRootPart", 5)
+	if hrp then
+		char:PivotTo(SPAWNS[math.random(#SPAWNS)] * CFrame.new(0, 4, 0))
+	end
+end
+
+SetLighting = function()
+pcall(function() L.Ambient = Color3.fromRGB(70,70,70) end)
+pcall(function() L.Brightness = 3 end)
+pcall(function() L.ColorShift_Bottom = Color3.fromRGB(0,0,0) end)
+pcall(function() L.ColorShift_Top = Color3.fromRGB(0,0,0) end)
+pcall(function() L.OutdoorAmbient = Color3.fromRGB(70,70,70) end)
+pcall(function() L.ClockTime = 14.5 end)
+pcall(function() L.GeographicLatitude = 0 end)
+pcall(function() L.ExposureCompensation = 0 end)
+pcall(function() L.GlobalShadows = true end)
+pcall(function() L.FogColor = Color3.fromRGB(192,192,192) end)
+pcall(function() L.FogEnd = 100000 end)
+pcall(function() L.FogStart = 0 end)
+pcall(function() L.EnvironmentDiffuseScale = 1 end)
+pcall(function() L.EnvironmentSpecularScale = 1 end)
+pcall(function() L.ShadowSoftness = 0.2 end)
+end
+C[1] = function()
+n[1]=Make("Folder",{Name="walls"},W)
+n[2]=Make("Folder",{Name="stage1"},n[1])
+n[3]=Make("Part",{Name="leftWall",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(80,1,53),CFrame=CFrame.new(-10,-470.5,-50.25,-1,0,0,0,0,1,0,1,-0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[2])
+n[4]=Make("Part",{Name="backWall",Transparency=0.5,Color=Color3.fromRGB(230,218,124),Size=Vector3.new(80,1,53),CFrame=CFrame.new(-49.5,-470.5,-10.75,0,1,0,0,0,1,1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[2])
+n[5]=Make("Part",{Name="groundPart",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(79,1,80),CFrame=CFrame.new(-9.9999962,-496.5,-10.25,0,0,1,0,1,-0,-1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[2])
+n[6]=Make("SurfaceGui",{Name="SurfaceGui",Face=Enum.NormalId.Bottom,SizingMode=Enum.SurfaceGuiSizingMode.PixelsPerStud,LightInfluence=1,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},n[5])
+n[7]=Make("TextLabel",{Name="TextLabel",BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.new(1,0,1,0),Text="play sleepy obby",TextColor3=Color3.fromRGB(0,0,0),TextSize=14,Font=Enum.Font.SourceSans,TextScaled=true,TextWrapped=true},n[6])
+n[8]=Make("Part",{Name="frontWall",MaterialVariant="Studs",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(1,52,79),CFrame=CFrame.new(29.5,-470,-10.250002,1,0,0,0,-1,0,0,0,-1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[2])
+n[9]=Make("Part",{Name="Union",MaterialVariant="Studs",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(53,1,80),CFrame=CFrame.new(-10,-470.5,29.750002,-8.1062317e-05,8.1062317e-05,1,-1,8.1062317e-05,-8.1062317e-05,-8.1062317e-05,-1,8.1062317e-05),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[2])
+n[10]=Make("Folder",{Name="stage2"},n[1])
+n[11]=Make("Part",{Name="leftWall",MaterialVariant="Studs",Color=Color3.fromRGB(137,207,240),Size=Vector3.new(79,52,1),CFrame=CFrame.new(-10.5,-418,-50.25,1,0,0,0,1,0,0,0,1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[10])
+n[12]=Make("Part",{Name="backWall",Transparency=0.5,Color=Color3.fromRGB(137,207,240),Size=Vector3.new(80,1,52),CFrame=CFrame.new(-49.5,-418,-10.75,0,1,0,0,0,1,1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[10])
+n[13]=Make("Part",{Name="frontWall",MaterialVariant="Studs",Color=Color3.fromRGB(137,207,240),Size=Vector3.new(1,52,80.5),CFrame=CFrame.new(29.5,-418,-10.5,1,0,0,0,1,0,0,0,1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[10])
+n[14]=Make("Part",{Name="rightWall",Color=Color3.fromRGB(137,207,240),Size=Vector3.new(80,1,51.999977),CFrame=CFrame.new(-10,-418,29.75,1,0,-0,0,0,1,0,-1,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[10])
+n[15]=Make("Folder",{Name="stage3"},n[1])
+n[16]=Make("Part",{Name="leftWall",Color=Color3.fromRGB(255,152,220),Size=Vector3.new(79,1,52),CFrame=CFrame.new(-10.5,-366,-50.25,-1,0,0,0,0,1,0,1,-0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[15])
+n[17]=Make("Part",{Name="backWall",Transparency=0.5,Color=Color3.fromRGB(255,152,220),Size=Vector3.new(80,1,52),CFrame=CFrame.new(-49.5,-366,-10.75,0,1,0,0,0,1,1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[15])
+n[18]=Make("Part",{Name="frontWall",Color=Color3.fromRGB(255,152,220),Size=Vector3.new(80.5,1,52),CFrame=CFrame.new(29.5,-366,-10.499999,0,-1,0,0,0,1,-1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[15])
+n[19]=Make("Part",{Name="rightWall",Color=Color3.fromRGB(255,152,220),Size=Vector3.new(80,1,51.999977),CFrame=CFrame.new(-10,-366,29.75,1,0,-0,0,0,1,0,-1,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[15])
+n[20]=Make("Folder",{Name="stage4"},n[1])
+n[21]=Make("Folder",{Name="stage5"},n[1])
+n[22]=Make("Folder",{Name="stage6"},n[1])
+n[23]=Make("Folder",{Name="stage7"},n[1])
+n[24]=Make("Folder",{Name="stage8"},n[1])
+n[25]=Make("Folder",{Name="stage8"},n[1])
+n[26]=Make("Folder",{Name="stage9"},n[1])
+n[27]=Make("Folder",{Name="stage10"},n[1])
+n[28]=Make("Folder",{Name="stage11"},n[1])
+n[29]=Make("Folder",{Name="stage12"},n[1])
+n[30]=Make("Folder",{Name="Parts"},W)
+n[31]=Make("Folder",{Name="stage1"},n[30])
+n[32]=Make("Folder",{Name="playtimeWall"},n[31])
+n[33]=Make("Folder",{Name="groupWall"},n[31])
+n[34]=Make("Part",{Name="Part",Transparency=1,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(3,13.9,2),CFrame=CFrame.new(-18.499996,-489.04999,31.25,1,0,0,0,1,0,0,0,1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[33])
+n[35]=Make("Part",{Name="Part1",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(18,1,19),CFrame=CFrame.new(-19.999996,-487.5,39.25,0,1,0,0,0,1,1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[33])
+n[36]=Make("Part",{Name="groupWall",Transparency=0.5,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(15,13.9,3),CFrame=CFrame.new(-9.4999962,-489.04999,30.75,1,0,0,0,1,0,0,0,1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[33])
+n[37]=Make("SurfaceGui",{Name="SurfaceGui",SizingMode=Enum.SurfaceGuiSizingMode.PixelsPerStud,LightInfluence=1,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},n[36])
+n[38]=Make("TextLabel",{Name="TextLabel",BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.new(1,0,0.30000001,0),Position=UDim2.new(0,0,0.34999999,0),Text="Press the like button and join the group!",TextColor3=Color3.fromRGB(255,255,255),TextSize=82,Font=Enum.Font.FredokaOne,TextWrapped=true},n[37])
+n[39]=Make("TextLabel",{Name="TextLabel",BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.new(1,0,0.1,0),Position=UDim2.new(0,0,0.62,0),Text="please press like 👍 for the game!",TextColor3=Color3.fromRGB(255,255,0),TextSize=47,Font=Enum.Font.FredokaOne,TextWrapped=true},n[37])
+n[40]=Make("TextLabel",{Name="TextLabel",BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=1,BorderSizePixel=0,Size=UDim2.new(1,0,0.1,0),Position=UDim2.new(0,0,0.89999998,0),Visible=false,Text="follow @nocopoco5 on roblox!",TextColor3=Color3.fromRGB(0,255,0),TextSize=56,Font=Enum.Font.FredokaOne,TextWrapped=true},n[37])
+n[41]=Make("Part",{Name="Part3",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(20,1,18),CFrame=CFrame.new(-9.4999962,-478.5,39.25,-1,0,0,0,-1,0,0,0,1),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[33])
+n[42]=Make("Part",{Name="Part4",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(20,1,17),CFrame=CFrame.new(-9.4999962,-487.5,47.75,1,0,-0,0,0,1,0,-1,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[33])
+n[43]=Make("Part",{Name="Part",Transparency=1,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(3,13.9,2),CFrame=CFrame.new(-0.49999619,-489.04999,31.25,1,0,0,0,1,0,0,0,1),CastShadow=false,TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Anchored=true},n[33])
+n[44]=Make("Part",{Name="Part5",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(20,1,19),CFrame=CFrame.new(-9.4999962,-496.5,38.75,-1,0,0,0,-1,0,0,0,1),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[33])
+n[45]=Make("Part",{Name="Part2",Color=Color3.fromRGB(230,218,124),Size=Vector3.new(18,1,19),CFrame=CFrame.new(1.0000038,-487.5,39.25,0,1,0,0,0,1,1,0,0),CastShadow=false,BottomSurface=Enum.SurfaceType.Studs,LeftSurface=Enum.SurfaceType.Studs,RightSurface=Enum.SurfaceType.Studs,FrontSurface=Enum.SurfaceType.Studs,BackSurface=Enum.SurfaceType.Studs,Anchored=true},n[33])
+n[46]=Make("Model",{Name="TimePlayedLeaderboard"},n[31])
+n[47]=Make("Model",{Name="Pole"},n[46])
+n[48]=Make("Part",{Name="Part",Color=Color3.fromRGB(99,95,98),Size=Vector3.new(1.1999998,0.30000001,0.30000001),CFrame=CFrame.new(20.525002,-488.05002,27.775993,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[47])
+n[49]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.8999996,0.40000001,0.40000001),CFrame=CFrame.new(20.525002,-486,27.775993,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[47])
+n[50]=Make("Part",{Name="Part",Color=Color3.fromRGB(99,95,98),Size=Vector3.new(1.5,0.30000001,0.30000001),CFrame=CFrame.new(20.525002,-492.10001,27.775993,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[47])
+n[51]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.6999998,0.40000001,0.40000001),CFrame=CFrame.new(20.525002,-490,27.775993,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[47])
+n[52]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.6999998,0.40000001,0.40000001),CFrame=CFrame.new(20.525002,-494.19998,27.775993,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[47])
+n[53]=Make("Model",{Name="Pole"},n[46])
+n[54]=Make("Part",{Name="Part",Color=Color3.fromRGB(99,95,98),Size=Vector3.new(1.5,0.30000001,0.30000001),CFrame=CFrame.new(4.2677107,-492.10001,27.775995,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[53])
+n[55]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.6999998,0.40000001,0.40000001),CFrame=CFrame.new(4.2677107,-494.19998,27.775995,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[53])
+n[56]=Make("Part",{Name="Part",Color=Color3.fromRGB(99,95,98),Size=Vector3.new(1.1999998,0.30000001,0.30000001),CFrame=CFrame.new(4.2677107,-488.05002,27.775995,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[53])
+n[57]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.8999996,0.40000001,0.40000001),CFrame=CFrame.new(4.2677107,-486,27.775995,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[53])
+n[58]=Make("Part",{Name="Part",Color=Color3.fromRGB(27,42,53),Size=Vector3.new(2.6999998,0.40000001,0.40000001),CFrame=CFrame.new(4.2677107,-490,27.775995,0,1,-0,-1,0,0,0,0,1),TopSurface=Enum.SurfaceType.Smooth,BottomSurface=Enum.SurfaceType.Smooth,Shape=Enum.PartType.Cylinder,Anchored=true},n[53])
+n[59]=Make("Model",{Name="ThreeDTextObject"},n[46])
+n[60]=Make("MeshPart",{Name="A",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.59620798,0.6359936,0.30000001),CFrame=CFrame.new(14.011007,-484.16968,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255186407")
+n[61]=Make("MeshPart",{Name="A",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.59620798,0.6359936,0.30000001),CFrame=CFrame.new(10.274284,-484.16968,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255186407")
+n[62]=Make("MeshPart",{Name="D",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.57332158,0.6485616,0.30000001),CFrame=CFrame.new(5.1522417,-484.16873,27.050987,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255186181")
+n[63]=Make("MeshPart",{Name="E",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.45216,0.61873281,0.30000001),CFrame=CFrame.new(10.861002,-484.17062,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255189295")
+n[64]=Make("MeshPart",{Name="D",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.57332158,0.6485616,0.30000001),CFrame=CFrame.new(12.201796,-484.16873,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255186181")
+n[65]=Make("MeshPart",{Name="L",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.42905599,0.62801921,0.30000001),CFrame=CFrame.new(14.574009,-484.16528,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255185577")
+n[66]=Make("MeshPart",{Name="B",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.52719039,0.648592,0.30000001),CFrame=CFrame.new(7.7755642,-484.1684,27.050987,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255186319")
+n[67]=Make("MeshPart",{Name="L",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.42905599,0.62801921,0.30000001),CFrame=CFrame.new(11.394342,-484.16528,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255185577")
+n[68]=Make("MeshPart",{Name="E",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.45216,0.61873281,0.30000001),CFrame=CFrame.new(15.913097,-484.17062,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255189295")
+n[69]=Make("MeshPart",{Name="O",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.64089441,0.65144801,0.30000001),CFrame=CFrame.new(7.1194277,-484.16876,27.050987,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255185380")
+n[70]=Make("MeshPart",{Name="E",Material=Enum.Material.SmoothPlastic,Color=Color3.fromRGB(255,255,255),Size=Vector3.new(0.45216,0.61873281,0.30000001),CFrame=CFrame.new(12.819832,-484.17062,27.050989,1,0,0,0,1,0,0,0,1),CanCollide=false,RenderFidelity=Enum.RenderFidelity.Precise,Anchored=true},n[59], "rbxassetid://3255189295")
+n[71]=Make("Part",{Name="ThreeDTextBoundingBox",Transparency=1,Size=Vector3.new(15.080929,0.65923762,0.30000001),CFrame=CFr
